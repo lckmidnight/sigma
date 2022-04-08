@@ -1,0 +1,66 @@
+version: v1beta11
+
+vars:
+  - name: BRANCH_NAME
+    command: "git rev-parse --abbrev-ref HEAD | sed -e 's/\\//-/g'"
+
+  - name: ROOT_HASH_PATHS
+    value: >-
+      Cargo.lock
+      Cargo.toml
+      Dockerfile
+      Makefile.toml
+
+images: |-
+  $(
+    scripts/devspace/image-config.sh \
+      sigma-controller \
+      ${ROOT_HASH_PATHS} \
+      libs/sigma-core \
+      apps/sigma-controller
+
+    scripts/devspace/image-config.sh \
+      sigma-server \
+      ${ROOT_HASH_PATHS} \
+      libs/sigma-core \
+      libs/sigma-protocol \
+      apps/sigma-server
+
+    scripts/devspace/image-config.sh \
+      sigma-web-server \
+      ${ROOT_HASH_PATHS} \
+      libs/sigma-core \
+      libs/sigma-protocol \
+      apps/sigma
+  )
+
+deployments:
+  - name: sigma-${BRANCH_NAME}
+    namespace: sigma-${BRANCH_NAME}
+    kubectl:
+      manifests:
+        - manifests/base
+      kustomize: true
+
+profiles:
+  - name: staging
+    patches:
+      - op: replace
+        path: deployments.name=sigma-${BRANCH_NAME}.kubectl.manifests[0]
+        value: manifests/staging
+    activation:
+      - vars:
+          BRANCH_NAME: preview
+
+  - name: production
+    patches:
+      - op: replace
+        path: deployments.name=sigma-${BRANCH_NAME}.kubectl.manifests[0]
+        value: manifests/production
+    activation:
+      - vars:
+          BRANCH_NAME: latest
+
+commands:
+  - name: clean
+    command: "git clean -qfdX"

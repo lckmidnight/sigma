@@ -1,0 +1,43 @@
+[config]
+skip_core_tasks = true
+
+[env]
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+
+ROOT_DIRECTORY = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}"
+
+CACHE_DIRECTORY = "${ROOT_DIRECTORY}/.cache"
+CACHE_BIN_DIRECTORY = "${CACHE_DIRECTORY}/bin"
+
+BUILD_DIRECTORY = "${ROOT_DIRECTORY}/build"
+BUILD_BIN_DIRECTORY = "${BUILD_DIRECTORY}/bin"
+
+CARGO_PROFILE = "dev"
+CARGO_FEATURES = ""
+
+[env.test]
+CARGO_PROFILE = "test"
+
+[env.release]
+CARGO_PROFILE = "release"
+
+[tasks.pre-build]
+private = true
+
+[tasks.main-build]
+private = true
+script.main = '''
+    cargo install \
+        --profile ${CARGO_PROFILE} \
+        --features "${CARGO_FEATURES}" \
+        --path . \
+        --root ${BUILD_DIRECTORY} \
+        --no-track \
+        --force
+'''
+
+[tasks.post-build]
+private = true
+
+[tasks.build]
+run_task = [{ name = ["pre-build", "main-build", "post-build"] }]

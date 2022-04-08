@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sigma-server
+spec:
+  selector:
+    matchLabels:
+      app: sigma-server
+  template:
+    metadata:
+      labels:
+        app: sigma-server
+    spec:
+      containers:
+        - name: sigma-server
+          image: sigma/sigma-server
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi

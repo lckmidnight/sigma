@@ -1,0 +1,52 @@
+[env]
+WASM_BINDGEN_ARGS = "--debug"
+WASM_OPT_ARGS = "-O1"
+
+[env.release]
+WASM_BINDGEN_ARGS = ""
+WASM_OPT_ARGS = "-O3"
+
+[tasks.wasm-bindgen]
+private = true
+install_script = '''
+    if [ -f "${CACHE_BIN_DIRECTORY}/wasm-bindgen" ]; then
+        exit 0
+    fi
+    mkdir -p ${CACHE_DIRECTORY}/wasm-bindgen
+    wget -qO- https://github.com/rustwasm/wasm-bindgen/releases/download/0.2.79/wasm-bindgen-0.2.79-x86_64-unknown-linux-musl.tar.gz \
+        | tar -xzf- --strip-components=1 -C ${CACHE_DIRECTORY}/wasm-bindgen
+    install -Dt ${CACHE_BIN_DIRECTORY} ${CACHE_DIRECTORY}/wasm-bindgen/wasm-bindgen
+    rm -rf ${CACHE_DIRECTORY}/wasm-bindgen
+'''
+script = '''
+    ${CACHE_BIN_DIRECTORY}/wasm-bindgen \
+        --target web \
+        --no-typescript \
+        --out-dir ${BUILD_BIN_DIRECTORY} \
+        ${WASM_BINDGEN_ARGS} \
+        ${BUILD_BIN_DIRECTORY}/${CARGO_MAKE_CRATE_NAME}.wasm
+    mv ${BUILD_BIN_DIRECTORY}/${CARGO_MAKE_CRATE_NAME}_bg.wasm \
+        ${BUILD_BIN_DIRECTORY}/${CARGO_MAKE_CRATE_NAME}.wasm
+'''
+
+[tasks.wasm-opt]
+private = true
+install_script = '''
+    if [ -f "${CACHE_BIN_DIRECTORY}/wasm-opt" ]; then
+        exit 0
+    fi
+    mkdir -p ${CACHE_DIRECTORY}/binaryen
+    wget -qO- https://github.com/WebAssembly/binaryen/releases/download/version_105/binaryen-version_105-x86_64-linux.tar.gz \
+        | tar -xzf- --strip-components=1 -C ${CACHE_DIRECTORY}/binaryen
+    install -Dt ${CACHE_BIN_DIRECTORY} ${CACHE_DIRECTORY}/binaryen/bin/wasm-opt
+    rm -rf ${CACHE_DIRECTORY}/binaryen
+'''
+script = '''
+    ${CACHE_BIN_DIRECTORY}/wasm-opt \
+        -o ${BUILD_BIN_DIRECTORY}/${CARGO_MAKE_CRATE_NAME}.wasm \
+        ${WASM_OPT_ARGS} \
+        ${BUILD_BIN_DIRECTORY}/${CARGO_MAKE_CRATE_NAME}.wasm
+'''
+
+[tasks.post-build]
+run_task = [{ name = ["wasm-bindgen", "wasm-opt"] }]

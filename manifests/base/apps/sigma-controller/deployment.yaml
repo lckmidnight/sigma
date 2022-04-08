@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sigma-controller
+spec:
+  selector:
+    matchLabels:
+      app: sigma-controller
+  template:
+    metadata:
+      labels:
+        app: sigma-controller
+    spec:
+      containers:
+        - name: sigma-controller
+          image: sigma/sigma-controller
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
