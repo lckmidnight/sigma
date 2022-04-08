@@ -1,0 +1,20 @@
+[package]
+name = "sigma-server"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+anyhow = "1.0"
+async-compat = "0.2"
+bevy = { version = "0.7", default-features = false }
+k8s-openapi = { version = "0.14", features = ["v1_22"] }
+kube = { version = "0.70" }
+sigma-core = { path = "../../libs/sigma-core" }
+sigma-protocol = { path = "../../libs/sigma-protocol" }
+tiny_http = "0.11"
+tokio = { version = "1.17", default-features = false, features = ["time"] }
+
+# async-recursion = "1.0"
+# futures = "0.3"
+# rand = "0.8"

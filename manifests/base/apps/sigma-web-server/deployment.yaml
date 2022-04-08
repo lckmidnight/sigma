@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sigma-web-server
+spec:
+  selector:
+    matchLabels:
+      app: sigma-web-server
+  template:
+    metadata:
+      labels:
+        app: sigma-web-server
+    spec:
+      containers:
+        - name: sigma-web-server
+          image: sigma/sigma-web-server
+          readinessProbe:
+            httpGet:
+              port: 80
+              path: /
+            failureThreshold: 6
+            initialDelaySeconds: 1
+            periodSeconds: 3
+          livenessProbe:
+            httpGet:
+              port: 80
+              path: /
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi

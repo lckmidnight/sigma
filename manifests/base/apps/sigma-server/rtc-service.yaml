@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sigma-server-rtc
+spec:
+  type: NodePort
+  externalTrafficPolicy: Local
+  ports:
+    - name: unused
+      port: 80

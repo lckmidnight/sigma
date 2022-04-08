@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sigma-server
+spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: sigma-server
+  template:
+    metadata:
+      labels:
+        app: sigma-server
+    spec:
+      serviceAccountName: sigma-server
+      containers:
+        - name: sigma-server
+          image: sigma/sigma-server
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /health
+            failureThreshold: 6
+            initialDelaySeconds: 1
+            periodSeconds: 3
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /health
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi

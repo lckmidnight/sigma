@@ -1,0 +1,7 @@
+**
+
+!/apps/**
+!/libs/**
+!/Cargo.lock
+!/Cargo.toml
+!/Makefile.toml
