@@ -1,0 +1,9 @@
+[package]
+name = "sigma-server"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+sigma-core = { path = "../../libs/sigma-core" }
+sigma-protocol = { path = "../../libs/sigma-protocol" }

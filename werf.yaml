@@ -1,0 +1,44 @@
+configVersion: 1
+project: sigma
+---
+image: sigma-build
+from: rust:1.59-bullseye
+mount:
+  - from: build_dir
+    to: /usr/local/cargo/registry
+  - from: build_dir
+    to: /usr/src/sigma/target
+git:
+  - to: /usr/src/sigma
+    stageDependencies:
+      install:
+        - Cargo.lock
+        - "**/Cargo.toml"
+      beforeSetup:
+        - "apps/**/*"
+        - "libs/**/*"
+ansible:
+  install:
+    - command: cargo fetch --locked
+      args:
+        chdir: /usr/src/sigma
+  beforeSetup:
+    - command: cargo build --workspace --frozen
+      args:
+        chdir: /usr/src/sigma
+    - command: ls -lAh /usr/src/sigma/target/debug
+    - copy:
+        src: /usr/src/sigma/target/debug/sigma-server
+        dest: /usr/src/sigma/build/bin/
+        mode: 0755
+    - command: ls -lAh /usr/src/sigma/build/bin
+---
+image: sigma-server
+from: gcr.io/distroless/cc-debian11
+import:
+  - image: sigma-build
+    before: install
+    add: /usr/src/sigma/build/bin/sigma-server
+    to: /sigma-server
+docker:
+  ENTRYPOINT: /sigma-server
